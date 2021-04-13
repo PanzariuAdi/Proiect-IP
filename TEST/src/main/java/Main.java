@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /*
+Pentru a rula FILE-> INVALIDATE CACHES/RESTART APOI BUILD->REBUILD PROJECT DUPA CARE RULATI
+ */
+
+
+/*
     La rulare, cel mai probabil va fi afisata o eroare in consola.
     Nu am reusit sa scap de ea, dar din cate am observat, aplicatia functioneaza cum ar trebui.
     Oops :(
