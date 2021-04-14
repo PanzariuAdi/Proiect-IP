@@ -1,13 +1,9 @@
-import com.google.api.client.util.ArrayMap;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
-import com.google.rpc.Help;
-
-import javax.swing.text.Document;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,10 +15,12 @@ public class Database {
     private FileInputStream serviceAccount;
     private FirebaseOptions options;
     private Firestore db;
-    private Map<String, Object> dataToInsert = new LinkedHashMap<>();
+    private Map<String, Object> dataToInsert = new HashMap<>();
     private ApiFuture<WriteResult> insertData;
     private ApiFuture<WriteResult> removeData;
+    private ApiFuture<WriteResult> updateData;
     private DocumentReference getData;
+    private DocumentReference updateRef;
     private ApiFuture<DocumentSnapshot> getDataApi;
     private DocumentSnapshot documentData;
 
@@ -79,56 +77,14 @@ public class Database {
     }
 
     //Insert into db
-    public void insertIntoDB(String table, String ... args) throws InterruptedException, ExecutionException{
+    public void insertIntoDB(String table, String ... args) throws InvalidNrOfArgsException, InterruptedException, ExecutionException {
         switch (table) {
-            case "persoana":
-                try {
-                    insertPersoana(args);
-                }
-                catch (InvalidNrOfArgsException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "pacient":
-                try {
-                    insertPacient(args);
-                }
-                catch (InvalidNrOfArgsException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "doctori":
-                try {
-                    insertDoctor(args);
-                }
-                catch (InvalidNrOfArgsException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "asistenti":
-                try {
-                    insertAsistent(args);
-                }
-                catch (InvalidNrOfArgsException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "date_pacient":
-                try {
-                    insertDatePacient(args);
-                }
-                catch (InvalidNrOfArgsException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "istoric_pacient":
-                try {
-                    insertIstoricPacient(args);
-                }
-                catch (InvalidNrOfArgsException e) {
-                    e.printStackTrace();
-                }
-                break;
+            case "persoana" -> insertPersoana(args);
+            case "pacient" -> insertPacient(args);
+            case "doctori" -> insertDoctor(args);
+            case "asistenti" -> insertAsistent(args);
+            case "date_pacient" -> insertDatePacient(args);
+            case "istoric_pacient" -> insertIstoricPacient(args);
         }
 
         //"Commit"
@@ -236,36 +192,104 @@ public class Database {
     }
 
     //Remove from db
-    public void removeFromDB(String table, String ID) throws InterruptedException, ExecutionException {
-        removeData = db.collection(table).document(ID).delete();
+    public void removeFromDB(String table, String documentID) throws InterruptedException, ExecutionException {
+        removeData = db.collection(table).document(documentID).delete();
         removeData.get();
     }
 
-    //Find document by parameter
-    public List<LinkedHashMap<String, Object>> getDocument(String table, String field, String value) throws InterruptedException, ExecutionException {
+    //Update document from db
+    public void updateInDB(String table, String documentID, String field, String value) throws InterruptedException, ExecutionException {
+        updateRef = db.collection(table).document(documentID);
+        updateData = updateRef.update(field, value);
+        updateData.get();
+    }
+
+    //Find document by field
+    public List<Map<String, Object>> getDocumentByField(String table, String field, String value) throws InterruptedException, ExecutionException {
         CollectionReference collection = db.collection(table);
         Query query = collection.whereEqualTo(field, value);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
 
-        List<LinkedHashMap<String, Object>> documents = new ArrayList<>();
+        List<Map<String, Object>> documents = new ArrayList<>();
         for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-            documents.add((LinkedHashMap<String, Object>) document.getData());
+            documents.add(getSortedMap(table, document.getData()));
         }
         return documents;
     }
-    public void test() throws InterruptedException, ExecutionException {
-        /*getData = db.collection("asistenti").document("#0");
+    //Get document by ID
+    public Map<String, Object> getDocumentByID(String table, String documentID) throws InterruptedException, ExecutionException {
+        getData = db.collection(table).document(documentID);
         getDataApi = getData.get();
-        try {
+        documentData = getDataApi.get();
+
+        Map<String, Object> resultData;
+        if (documentData.exists()) {
+            resultData = getSortedMap(table, documentData.getData());
+            return resultData;
+        }
+        return null;
+    }
+    //Get list of documents by table name
+    public List<Map<String, Object>> getCollection(String table) throws InterruptedException, ExecutionException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        Iterable<DocumentReference> collection = db.collection(table).listDocuments();
+
+        for (DocumentReference docRef : collection) {
+            getDataApi = docRef.get();
             documentData = getDataApi.get();
+            result.add(getSortedMap(table, documentData.getData()));
         }
-        catch (Exception e) {
-            e.printStackTrace();
+
+        return result;
+    }
+
+    //Sort document data by table type
+    private Map<String, Object> getSortedMap(String table, Map<String, Object> map) {
+        Map<String, Object> resultData = new LinkedHashMap<>();
+
+        switch (table) {
+            case "persoana" -> {
+                resultData.put("user", map.get("user"));
+                resultData.put("nume", map.get("nume"));
+                resultData.put("prenume", map.get("prenume"));
+                resultData.put("sex", map.get("sex"));
+            }
+            case "asistenti" -> {
+                resultData.put("grad", map.get("grad"));
+                resultData.put("spital", map.get("spital"));
+            }
+            case "doctori" -> {
+                resultData.put("grad", map.get("grad"));
+                resultData.put("specializare", map.get("specializare"));
+                resultData.put("spital", map.get("spital"));
+                resultData.put("birou", map.get("birou"));
+            }
+            case "pacient" -> {
+                resultData.put("user", map.get("user"));
+                resultData.put("nume", map.get("nume"));
+                resultData.put("prenume", map.get("prenume"));
+                resultData.put("sex", map.get("sex"));
+                resultData.put("data_nastere", map.get("data_nastere"));
+                resultData.put("greutate", map.get("greutate"));
+                resultData.put("inaltime", map.get("inaltime"));
+            }
+            case "date_pacient" -> {
+                resultData.put("user", map.get("user"));
+                resultData.put("puls", map.get("puls"));
+                resultData.put("calorii", map.get("calorii"));
+                resultData.put("nr_pasi", map.get("nr_pasi"));
+                resultData.put("nivel_oxigen", map.get("nivel_oxigen"));
+                resultData.put("calitate_somn", map.get("calitate_somn"));
+            }
+            case "istoric_pacient" -> {
+                resultData.put("user", map.get("user"));
+                resultData.put("diagnostic", map.get("diagnostic"));
+                resultData.put("user_doctor", map.get("user_doctor"));
+                resultData.put("data_internare", map.get("data_internare"));
+                resultData.put("data_externare", map.get("data_externare"));
+                resultData.put("spital", map.get("spital"));
+            }
         }
-        if (documentData.exists())
-            System.out.println(documentData.getData());
-        else
-            System.out.println("No such document!");*/
-        //System.out.println("Update time: " + insertData.get().getUpdateTime());
+        return resultData;
     }
 }
