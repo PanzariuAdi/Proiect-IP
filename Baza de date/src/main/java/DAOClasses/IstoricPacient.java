@@ -9,22 +9,9 @@ import java.util.concurrent.ExecutionException;
 public class IstoricPacient implements DAO {
     private final Database database = Database.getInstance();
 
-    private StringBuilder pacientID;
-    private int pacientIDNumber;
+    public IstoricPacient() {}
 
-    public IstoricPacient() {
-        pacientID = Pacient.getPersonID();
-        pacientIDNumber = Pacient.getPersonIDNumber();
-    }
-
-    public void insertIntoDB(String ... args) throws InvalidNrOfArgsException, InterruptedException, ExecutionException {
-        try {
-            database.connectToDatabase();
-        }
-        catch (Exception e) {
-            System.err.println("Error: " + e);
-        }
-
+    public void insertIntoDB(String CNP, String ... args) throws InvalidNrOfArgsException, InterruptedException, ExecutionException {
         Map<String, Object> dataToInsert = new HashMap<>();
 
         if (args.length != 6)
@@ -37,53 +24,23 @@ public class IstoricPacient implements DAO {
         dataToInsert.put("data_externare", args[4]);
         dataToInsert.put("spital", args[5]);
 
-        pacientID.replace(2, pacientID.length(), String.valueOf(pacientIDNumber));
-        pacientIDNumber++;
-
-        ApiFuture<WriteResult> insertData = database.db.collection("istoric_pacient").document(pacientID.toString()).set(dataToInsert);
+        ApiFuture<WriteResult> insertData = database.db.collection("istoric_pacient").document(CNP).set(dataToInsert);
 
         dataToInsert.clear();
 
         insertData.get();
         System.out.println("Data inserted in collection date_pacient!");
-
-        database.disconnectFromDatabase();
     }
     public void removeFromDB(String documentID) throws InterruptedException, ExecutionException {
-        try {
-            database.connectToDatabase();
-        }
-        catch (Exception e) {
-            System.err.println("Error: " + e);
-        }
-
         ApiFuture<WriteResult> removeData = database.db.collection("istoric_pacient").document(documentID).delete();
         removeData.get();
-
-        database.disconnectFromDatabase();
     }
     public void updateInDB(String documentID, String field, String value) throws InterruptedException, ExecutionException {
-        try {
-            database.connectToDatabase();
-        }
-        catch (Exception e) {
-            System.err.println("Error: " + e);
-        }
-
         DocumentReference updateRef = database.db.collection("istoric_pacient").document(documentID);
         ApiFuture<WriteResult> updateData = updateRef.update(field, value);
         updateData.get();
-
-        database.disconnectFromDatabase();
     }
     public List<Map<String, Object>> getDocumentByField(String field, String value) throws InterruptedException, ExecutionException {
-        try {
-            database.connectToDatabase();
-        }
-        catch (Exception e) {
-            System.err.println("Error: " + e);
-        }
-
         CollectionReference collection = database.db.collection("istoric_pacient");
         Query query = collection.whereEqualTo(field, value);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -92,17 +49,10 @@ public class IstoricPacient implements DAO {
         for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
             documents.add(getSortedMap(document.getData()));
         }
-        database.disconnectFromDatabase();
+
         return documents;
     }
     public Map<String, Object> getDocumentByID(String documentID) throws InterruptedException, ExecutionException {
-        try {
-            database.connectToDatabase();
-        }
-        catch (Exception e) {
-            System.err.println("Error: " + e);
-        }
-
         DocumentReference getData = database.db.collection("istoric_pacient").document(documentID);
         ApiFuture<DocumentSnapshot> getDataApi = getData.get();
         DocumentSnapshot documentData = getDataApi.get();
@@ -113,8 +63,20 @@ public class IstoricPacient implements DAO {
             database.disconnectFromDatabase();
             return resultData;
         }
-        database.disconnectFromDatabase();
+
         return null;
+    }
+    public List<Map<String, Object>> getCollection() throws InterruptedException, ExecutionException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        Iterable<DocumentReference> collection = database.db.collection("istoric_pacient").listDocuments();
+
+        for (DocumentReference docRef : collection) {
+            ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
+            DocumentSnapshot documentData = getDataApi.get();
+            result.add(getSortedMap(documentData.getData()));
+        }
+
+        return result;
     }
     public Map<String, Object> getSortedMap(Map<String, Object> map) {
         Map<String, Object> resultData = new LinkedHashMap<>();

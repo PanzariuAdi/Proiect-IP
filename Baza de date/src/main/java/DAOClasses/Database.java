@@ -60,6 +60,7 @@ public class Database {
         System.out.println("Connection to database successful!");
     }
 
+    //Disconnect from DB
     public void disconnectFromDatabase() {
         try {
             db.close();
@@ -67,5 +68,7 @@ public class Database {
         catch (Exception e) {
             System.err.println("Error: " + e);
         }
+
+        System.out.println("Disconnected from database successfully!");
     }
 }

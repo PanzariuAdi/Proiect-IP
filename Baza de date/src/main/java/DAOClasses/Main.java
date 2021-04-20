@@ -25,6 +25,11 @@ Pentru a rula FILE-> INVALIDATE CACHES/RESTART APOI BUILD->REBUILD PROJECT DUPA 
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        //Mai intai stabilim conexiunea cu baza de date
+        Database db = Database.getInstance();
+        db.connectToDatabase();
+
+        //Apoi instantiem obiecte DAO pentru fiecare colectie
         DAO persoana = new Persoana();
         DAO pacient = new Pacient();
         DAO doctor = new Doctor();
@@ -32,6 +37,10 @@ public class Main {
         DAO datePacient = new DatePacient();
         DAO istoricPacient = new IstoricPacient();
 
-        doctor.insertIntoDB("test", "test", "test", "test");
+        //ID-ul fiecarui document va fi CNP-ul
+        asistent.insertIntoDB("2890505356748", "gradtest", "spitaltest");
+
+        //La sfarsit, ne deconectam de la baza de date
+        db.disconnectFromDatabase();
     }
 }
