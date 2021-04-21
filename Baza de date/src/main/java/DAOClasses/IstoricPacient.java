@@ -57,14 +57,13 @@ public class IstoricPacient implements DAO {
         ApiFuture<DocumentSnapshot> getDataApi = getData.get();
         DocumentSnapshot documentData = getDataApi.get();
 
-        Map<String, Object> resultData;
+        Map<String, Object> resultData = new LinkedHashMap<>();
         if (documentData.exists()) {
             resultData = getSortedMap(documentData.getData());
-            database.disconnectFromDatabase();
             return resultData;
         }
 
-        return null;
+        return resultData;
     }
     public List<Map<String, Object>> getCollection() throws InterruptedException, ExecutionException {
         List<Map<String, Object>> result = new ArrayList<>();

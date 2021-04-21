@@ -36,9 +36,11 @@ public class Main {
         DAO asistent = new Asistent();
         DAO datePacient = new DatePacient();
         DAO istoricPacient = new IstoricPacient();
+        Conturi conturi = new Conturi();
 
-        //ID-ul fiecarui document va fi CNP-ul
-        asistent.insertIntoDB("2890505356748", "gradtest", "spitaltest");
+        System.out.println(conturi.getPassword("yes"));
+        System.out.println(conturi.getRol("yes"));
+        System.out.println(conturi.checkIfUserExists("xd"));
 
         //La sfarsit, ne deconectam de la baza de date
         db.disconnectFromDatabase();
