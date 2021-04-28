@@ -30,168 +30,160 @@ public class Pacient implements DAO {
         insertData.get();
         System.out.println("Data inserted in collection pacient!");
     }
-    //Adaugare contraindicatii
-    public void insertContraindicatii(String CNP, String numeContraindicatie, String descriere) throws InterruptedException, ExecutionException {
+    public void insertCollectionByName(String CNP, String collectionName, String ... args) throws InterruptedException, ExecutionException {
         Map<String, Object> dataToInsert = new HashMap<>();
+        ApiFuture<WriteResult> insertData = null;
 
-        dataToInsert.put("descriere", descriere);
-
-        ApiFuture<WriteResult> insertData = database.db.collection("pacient")
-                                            .document(CNP)
-                                            .collection("contraindicatii")
-                                            .document(numeContraindicatie)
-                                            .set(dataToInsert);
-
-        dataToInsert.clear();
-
-        insertData.get();
-        System.out.println("Contraindicatie inserted in collection pacient!");
-    }
-    //Inserare puls, calorii, calitate somn etc dupa data curenta
-    public void insertDate(String CNP, String ... args) throws InvalidNrOfArgsException, InterruptedException, ExecutionException {
-        Map<String, Object> dataToInsert = new HashMap<>();
-
-        if (args.length != 5)
-            throw new InvalidNrOfArgsException("Number of parameters is 5.");
-
-        dataToInsert.put("puls", args[0]);
-        dataToInsert.put("calorii", Double.parseDouble(args[1]));
-        dataToInsert.put("nr_pasi", args[2]);
-        dataToInsert.put("nivel_oxigen", Double.parseDouble(args[3]));
-        dataToInsert.put("calitate_somn", args[4]);
-
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm");
-        LocalDateTime now = LocalDateTime.now();
-        String currentDate = dtf.format(now);
-
-        ApiFuture<WriteResult> insertData = database.db.collection("pacient")
-                                            .document(CNP).collection("date")
-                                            .document(currentDate)
-                                            .set(dataToInsert);
+        switch (collectionName) {
+            case "contraindicatii" -> {
+                dataToInsert.put("nume_contraindicatie", args[0]);
+                dataToInsert.put("descriere", args[1]);
+                insertData = database.db.collection("pacient")
+                        .document(CNP)
+                        .collection("contraindicatii")
+                        .document()
+                        .set(dataToInsert);
+            }
+            case "date" -> {
+                dataToInsert.put("puls", args[0]);
+                dataToInsert.put("calorii", Double.parseDouble(args[1]));
+                dataToInsert.put("nr_pasi", args[2]);
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm");
+                LocalDateTime now = LocalDateTime.now();
+                String currentDate = dtf.format(now);
+                insertData = database.db.collection("pacient")
+                        .document(CNP).collection("date")
+                        .document(currentDate)
+                        .set(dataToInsert);
+            }
+            case "indicatii" -> {
+                dataToInsert.put("nume_indicatie", args[0]);
+                dataToInsert.put("descriere", args[1]);
+                insertData = database.db.collection("pacient")
+                        .document(CNP)
+                        .collection("indicatii")
+                        .document()
+                        .set(dataToInsert);
+            }
+            case "istoric" -> {
+                dataToInsert.put("cnp_doctor", args[1]);
+                dataToInsert.put("data_externare", args[2]);
+                dataToInsert.put("diagnostic", args[3]);
+                dataToInsert.put("spital", args[4]);
+                insertData = database.db.collection("pacient")
+                        .document(CNP)
+                        .collection("istoric")
+                        .document(args[0])
+                        .set(dataToInsert);
+            }
+            case "medicamente" -> {
+                dataToInsert.put("nume_medicament", args[0]);
+                dataToInsert.put("mod_de_administrare", args[1]);
+                insertData = database.db.collection("pacient")
+                        .document(CNP)
+                        .collection("medicamente")
+                        .document()
+                        .set(dataToInsert);
+            }
+            case "calitate_somn" -> {
+                dataToInsert.put("calitate", args[0]);
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm");
+                LocalDateTime now = LocalDateTime.now();
+                String currentDate = dtf.format(now);
+                insertData = database.db.collection("pacient")
+                        .document(CNP).collection("calitate_somn")
+                        .document(currentDate)
+                        .set(dataToInsert);
+            }
+            case "nivel_oxigen" -> {
+                dataToInsert.put("value", args[0]);
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm");
+                LocalDateTime now = LocalDateTime.now();
+                String currentDate = dtf.format(now);
+                insertData = database.db.collection("pacient")
+                        .document(CNP).collection("nivel_oxigen")
+                        .document(currentDate)
+                        .set(dataToInsert);
+            }
+        }
 
         dataToInsert.clear();
 
         insertData.get();
         System.out.println("Data inserted in collection pacient!");
     }
-    //Adaugare indicatii
-    public void insertIndicatii(String CNP, String numeIndicatie, String descriere) throws InterruptedException, ExecutionException {
-        Map<String, Object> dataToInsert = new HashMap<>();
-
-        dataToInsert.put("descriere", descriere);
-
-        ApiFuture<WriteResult> insertData = database.db.collection("pacient")
-                .document(CNP)
-                .collection("indicatii")
-                .document(numeIndicatie)
-                .set(dataToInsert);
-
-        dataToInsert.clear();
-
-        insertData.get();
-        System.out.println("Indicatie inserted in collection pacient!");
-    }
-    //Adaugare istoric pacient
-    public void insertIstoric(String CNP, String dataInternare, String ... args) throws InvalidNrOfArgsException, InterruptedException, ExecutionException {
-        Map<String, Object> dataToInsert = new HashMap<>();
-
-        if (args.length != 4)
-            throw new InvalidNrOfArgsException("Number of parameters is 4.");
-
-        dataToInsert.put("cnp_doctor", args[0]);
-        dataToInsert.put("data_externare", args[1]);
-        dataToInsert.put("diagnostic", args[2]);
-        dataToInsert.put("spital", args[3]);
-
-        ApiFuture<WriteResult> insertData = database.db.collection("pacient")
-                .document(CNP)
-                .collection("istoric")
-                .document(dataInternare)
-                .set(dataToInsert);
-
-        dataToInsert.clear();
-
-        insertData.get();
-        System.out.println("Istoric inserted in collection pacient!");
-    }
-    //Adaugare medicamente
-    public void insertMedicamente(String CNP, String numeMedicament, String modDeAdministrare) throws InterruptedException, ExecutionException {
-        Map<String, Object> dataToInsert = new HashMap<>();
-
-        dataToInsert.put("mod_de_administrare", modDeAdministrare);
-
-        ApiFuture<WriteResult> insertData = database.db.collection("pacient")
-                .document(CNP)
-                .collection("medicamente")
-                .document(numeMedicament)
-                .set(dataToInsert);
-
-        dataToInsert.clear();
-
-        insertData.get();
-        System.out.println("Medicament inserted in collection pacient!");
-    }
-
-    //Getters
-    public List<Map<String, Object>> getContraindicatii(String CNP) throws InterruptedException, ExecutionException {
+    public List<Map<String, Object>> getCollectionByName(String CNP, String collectionName) throws InterruptedException, ExecutionException {
         List<Map<String, Object>> result = new ArrayList<>();
-        Iterable<DocumentReference> collection = database.db.collection("pacient").document(CNP).collection("contraindicatii").listDocuments();
+        Iterable<DocumentReference> collection = null;
 
-        for (DocumentReference docRef : collection) {
-            ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
-            DocumentSnapshot documentData = getDataApi.get();
-            result.add(sortMap("contraindicatii", documentData.getData()));
+
+        switch (collectionName) {
+            case "contraindicatii" -> {
+                collection = database.db.collection("pacient").document(CNP).collection("contraindicatii").listDocuments();
+                for (DocumentReference docRef : collection) {
+                    ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
+                    DocumentSnapshot documentData = getDataApi.get();
+                    result.add(sortMap("contraindicatii", documentData.getData()));
+                }
+                return result;
+            }
+            case "date" -> {
+                collection = database.db.collection("pacient").document(CNP).collection("date").listDocuments();
+                for (DocumentReference docRef : collection) {
+                    ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
+                    DocumentSnapshot documentData = getDataApi.get();
+                    result.add(sortMap("date", documentData.getData()));
+                }
+                return result;
+            }
+            case "indicatii" -> {
+                collection = database.db.collection("pacient").document(CNP).collection("indicatii").listDocuments();
+                for (DocumentReference docRef : collection) {
+                    ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
+                    DocumentSnapshot documentData = getDataApi.get();
+                    result.add(sortMap("indicatii", documentData.getData()));
+                }
+                return result;
+            }
+            case "istoric" -> {
+                collection = database.db.collection("pacient").document(CNP).collection("istoric").listDocuments();
+                for (DocumentReference docRef : collection) {
+                    ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
+                    DocumentSnapshot documentData = getDataApi.get();
+                    result.add(sortMap("istoric", documentData.getData()));
+                }
+                return result;
+            }
+            case "medicamente" -> {
+                collection = database.db.collection("pacient").document(CNP).collection("medicamente").listDocuments();
+                for (DocumentReference docRef : collection) {
+                    ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
+                    DocumentSnapshot documentData = getDataApi.get();
+                    result.add(sortMap("medicamente", documentData.getData()));
+                }
+                return result;
+            }
+            case "calitate_somn" -> {
+                collection = database.db.collection("pacient").document(CNP).collection("calitate_somn").listDocuments();
+                for (DocumentReference docRef : collection) {
+                    ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
+                    DocumentSnapshot documentData = getDataApi.get();
+                    result.add(sortMap("calitate_somn", documentData.getData()));
+                }
+                return result;
+            }
+            case "nivel_oxigen" -> {
+                collection = database.db.collection("pacient").document(CNP).collection("nivel_oxigen").listDocuments();
+                for (DocumentReference docRef : collection) {
+                    ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
+                    DocumentSnapshot documentData = getDataApi.get();
+                    result.add(sortMap("nivel_oxigen", documentData.getData()));
+                }
+                return result;
+            }
         }
 
-        return result;
-    }
-    public List<Map<String, Object>> getDatePacient(String CNP) throws InterruptedException, ExecutionException {
-        List<Map<String, Object>> result = new ArrayList<>();
-        Iterable<DocumentReference> collection = database.db.collection("pacient").document(CNP).collection("date").listDocuments();
-
-        for (DocumentReference docRef : collection) {
-            ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
-            DocumentSnapshot documentData = getDataApi.get();
-            result.add(sortMap("date", documentData.getData()));
-        }
-
-        return result;
-    }
-    public List<Map<String, Object>> getIndicatii(String CNP) throws InterruptedException, ExecutionException {
-        List<Map<String, Object>> result = new ArrayList<>();
-        Iterable<DocumentReference> collection = database.db.collection("pacient").document(CNP).collection("indicatii").listDocuments();
-
-        for (DocumentReference docRef : collection) {
-            ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
-            DocumentSnapshot documentData = getDataApi.get();
-            result.add(sortMap("indicatii", documentData.getData()));
-        }
-
-        return result;
-    }
-    public List<Map<String, Object>> getIstoric(String CNP) throws InterruptedException, ExecutionException {
-        List<Map<String, Object>> result = new ArrayList<>();
-        Iterable<DocumentReference> collection = database.db.collection("pacient").document(CNP).collection("istoric").listDocuments();
-
-        for (DocumentReference docRef : collection) {
-            ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
-            DocumentSnapshot documentData = getDataApi.get();
-            result.add(sortMap("istoric", documentData.getData()));
-        }
-
-        return result;
-    }
-    public List<Map<String, Object>> getMedicamente(String CNP) throws InterruptedException, ExecutionException {
-        List<Map<String, Object>> result = new ArrayList<>();
-        Iterable<DocumentReference> collection = database.db.collection("pacient").document(CNP).collection("medicamente").listDocuments();
-
-        for (DocumentReference docRef : collection) {
-            ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
-            DocumentSnapshot documentData = getDataApi.get();
-            result.add(sortMap("medicamente", documentData.getData()));
-        }
-
-        return result;
+        return null;
     }
 
     //Other methods
@@ -241,6 +233,7 @@ public class Pacient implements DAO {
 
         return result;
     }
+    @Deprecated
     public Map<String, Object> getSortedMap(Map<String, Object> map) {
         Map<String, Object> resultData = new LinkedHashMap<>();
 
@@ -254,7 +247,7 @@ public class Pacient implements DAO {
 
         return resultData;
     }
-
+    
     //Final map sorting method
     public Map<String, Object> sortMap(String collection, Map<String, Object> map) {
         Map<String, Object> resultData = new LinkedHashMap<>();
@@ -272,14 +265,26 @@ public class Pacient implements DAO {
                 resultData.put("nivel_oxigen", map.get("nivel_oxigen"));
                 resultData.put("calitate_somn", map.get("calitate_somn"));
             }
-            case "indicatii", "contraindicatii" -> resultData.put("descriere", map.get("descriere"));
+            case "indicatii" -> {
+                resultData.put("nume_indicatie", map.get("nume_indicatie"));
+                resultData.put("descriere", map.get("descriere"));
+            }
+            case "contraindicatii" -> {
+                resultData.put("nume_contraindicatie", map.get("nume_contraindicatie"));
+                resultData.put("descriere", map.get("descriere"));
+            }
             case "istoric" -> {
                 resultData.put("cnp_doctor", map.get("cnp_doctor"));
                 resultData.put("data_externare", map.get("data_externare"));
                 resultData.put("diagnostic", map.get("diagnostic"));
                 resultData.put("spital", map.get("spital"));
             }
-            case "medicamente" -> resultData.put("mod_de_administrare", map.get("mod_de_administrare"));
+            case "medicamente" -> {
+                resultData.put("nume_medicament", map.get("nume_medicament"));
+                resultData.put("mod_de_administrare", map.get("mod_de_administrare"));
+            }
+            case "calitate_somn" -> resultData.put("calitate", map.get("calitate"));
+            case "nivel_oxigen" -> resultData.put("value", map.get("value"));
         }
 
         return resultData;

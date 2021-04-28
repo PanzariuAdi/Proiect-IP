@@ -133,6 +133,7 @@ class PacientTest {
         expected.clear();
     }
 
+    /*
     @Test
     @DisplayName("Insert contraindicatii")
     void pacientInsertContraindicatii() throws Exception {
@@ -219,4 +220,5 @@ class PacientTest {
         actual.clear();
         expected.clear();
     }
+     */
 }
