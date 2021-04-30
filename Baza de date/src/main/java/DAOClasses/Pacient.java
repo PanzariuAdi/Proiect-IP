@@ -3,11 +3,6 @@ package DAOClasses;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-
 public class Pacient implements DAO {
     private final Database database = Database.getInstance();
 
@@ -36,8 +31,7 @@ public class Pacient implements DAO {
 
         switch (collectionName) {
             case "contraindicatii" -> {
-                dataToInsert.put("nume_contraindicatie", args[0]);
-                dataToInsert.put("descriere", args[1]);
+                dataToInsert.put("descriere", args[0]);
                 insertData = database.db.collection("pacient")
                         .document(CNP)
                         .collection("contraindicatii")
@@ -46,7 +40,7 @@ public class Pacient implements DAO {
             }
             case "date" -> {
                 dataToInsert.put("puls", args[0]);
-                dataToInsert.put("calorii", Double.parseDouble(args[1]));
+                dataToInsert.put("calorii", args[1]);
                 dataToInsert.put("nr_pasi", args[2]);
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm");
                 LocalDateTime now = LocalDateTime.now();
@@ -57,8 +51,7 @@ public class Pacient implements DAO {
                         .set(dataToInsert);
             }
             case "indicatii" -> {
-                dataToInsert.put("nume_indicatie", args[0]);
-                dataToInsert.put("descriere", args[1]);
+                dataToInsert.put("descriere", args[0]);
                 insertData = database.db.collection("pacient")
                         .document(CNP)
                         .collection("indicatii")
@@ -77,15 +70,16 @@ public class Pacient implements DAO {
                         .set(dataToInsert);
             }
             case "medicamente" -> {
-                dataToInsert.put("nume_medicament", args[0]);
                 dataToInsert.put("mod_de_administrare", args[1]);
                 insertData = database.db.collection("pacient")
                         .document(CNP)
                         .collection("medicamente")
-                        .document()
+                        .document(args[0])
                         .set(dataToInsert);
             }
             case "calitate_somn" -> {
+                System.out.println(CNP);
+                System.out.println(args[0]);
                 dataToInsert.put("calitate", args[0]);
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm");
                 LocalDateTime now = LocalDateTime.now();
@@ -109,7 +103,8 @@ public class Pacient implements DAO {
 
         dataToInsert.clear();
 
-        insertData.get();
+        if(insertData!=null)
+            insertData.get();
         System.out.println("Data inserted in collection pacient!");
     }
     public List<Map<String, Object>> getCollectionByName(String CNP, String collectionName) throws InterruptedException, ExecutionException {
@@ -159,7 +154,9 @@ public class Pacient implements DAO {
                 for (DocumentReference docRef : collection) {
                     ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
                     DocumentSnapshot documentData = getDataApi.get();
-                    result.add(sortMap("medicamente", documentData.getData()));
+                    Map<String,Object> stringObjectMap = (Map<String, Object>) documentData.getData();
+                    stringObjectMap.put("nume_medicament",documentData.getId());
+                    result.add(sortMap("medicamente", stringObjectMap));
                 }
                 return result;
             }
@@ -247,7 +244,7 @@ public class Pacient implements DAO {
 
         return resultData;
     }
-    
+
     //Final map sorting method
     public Map<String, Object> sortMap(String collection, Map<String, Object> map) {
         Map<String, Object> resultData = new LinkedHashMap<>();
@@ -265,12 +262,7 @@ public class Pacient implements DAO {
                 resultData.put("nivel_oxigen", map.get("nivel_oxigen"));
                 resultData.put("calitate_somn", map.get("calitate_somn"));
             }
-            case "indicatii" -> {
-                resultData.put("nume_indicatie", map.get("nume_indicatie"));
-                resultData.put("descriere", map.get("descriere"));
-            }
-            case "contraindicatii" -> {
-                resultData.put("nume_contraindicatie", map.get("nume_contraindicatie"));
+            case "indicatii", "contraindicatii" -> {
                 resultData.put("descriere", map.get("descriere"));
             }
             case "istoric" -> {
@@ -280,8 +272,7 @@ public class Pacient implements DAO {
                 resultData.put("spital", map.get("spital"));
             }
             case "medicamente" -> {
-                resultData.put("nume_medicament", map.get("nume_medicament"));
-                resultData.put("mod_de_administrare", map.get("mod_de_administrare"));
+                resultData.put((String) map.get("nume_medicament"), map.get("mod_de_administrare"));
             }
             case "calitate_somn" -> resultData.put("calitate", map.get("calitate"));
             case "nivel_oxigen" -> resultData.put("value", map.get("value"));
