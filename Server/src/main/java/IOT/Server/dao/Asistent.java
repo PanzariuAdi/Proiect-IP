@@ -17,7 +17,7 @@ public class Asistent implements DAO {
         if (args.length != 2)
             throw new InvalidNrOfArgsException("Number of parameters is 2.");
 
-        dataToInsert.put("grad", args[0]);
+        dataToInsert.put("sectie", args[0]);
         dataToInsert.put("spital", args[1]);
 
         ApiFuture<WriteResult> insertData = database.db.collection("asistenti").document(CNP).set(dataToInsert);
@@ -53,14 +53,13 @@ public class Asistent implements DAO {
         ApiFuture<DocumentSnapshot> getDataApi = getData.get();
         DocumentSnapshot documentData = getDataApi.get();
 
-        Map<String, Object> resultData;
+        Map<String, Object> resultData = new LinkedHashMap<>();
         if (documentData.exists()) {
             resultData = getSortedMap(documentData.getData());
-            database.disconnectFromDatabase();
             return resultData;
         }
 
-        return null;
+        return resultData;
     }
     public List<Map<String, Object>> getCollection() throws InterruptedException, ExecutionException {
         List<Map<String, Object>> result = new ArrayList<>();
@@ -76,7 +75,7 @@ public class Asistent implements DAO {
     }
     public Map<String, Object> getSortedMap(Map<String, Object> map) {
         Map<String, Object> resultData = new LinkedHashMap<>();
-        resultData.put("grad", map.get("grad"));
+        resultData.put("sectie", map.get("sectie"));
         resultData.put("spital", map.get("spital"));
 
         return resultData;

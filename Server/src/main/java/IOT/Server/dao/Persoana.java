@@ -6,6 +6,9 @@ import com.google.cloud.firestore.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+
 public class Persoana implements DAO {
     private final Database database = Database.getInstance();
 
@@ -16,11 +19,12 @@ public class Persoana implements DAO {
 
         if (args.length != 5)
             throw new InvalidNrOfArgsException("Number of parameters is 5.");
+
         dataToInsert.put("nume", args[0]);
         dataToInsert.put("prenume", args[1]);
         dataToInsert.put("sex", args[2]);
-        dataToInsert.put("data_nastere",args[3]);
-        dataToInsert.put("adresa",args[4]);
+        dataToInsert.put("data_nastere", args[3]);
+        dataToInsert.put("adresa", args[4]);
 
         ApiFuture<WriteResult> insertData = database.db.collection("persoana").document(CNP).set(dataToInsert);
 
@@ -55,14 +59,13 @@ public class Persoana implements DAO {
         ApiFuture<DocumentSnapshot> getDataApi = getData.get();
         DocumentSnapshot documentData = getDataApi.get();
 
-        Map<String, Object> resultData;
+        Map<String, Object> resultData = new LinkedHashMap<>();
         if (documentData.exists()) {
             resultData = getSortedMap(documentData.getData());
-            //database.disconnectFromDatabase();
             return resultData;
         }
 
-        return null;
+        return resultData;
     }
     public List<Map<String, Object>> getCollection() throws InterruptedException, ExecutionException {
         List<Map<String, Object>> result = new ArrayList<>();
@@ -78,11 +81,13 @@ public class Persoana implements DAO {
     }
     public Map<String, Object> getSortedMap(Map<String, Object> map) {
         Map<String, Object> resultData = new LinkedHashMap<>();
+
         resultData.put("nume", map.get("nume"));
         resultData.put("prenume", map.get("prenume"));
         resultData.put("sex", map.get("sex"));
-        resultData.put("data_nastere",map.get("data_nastere"));
-        resultData.put("adresa",map.get("adresa"));
+        resultData.put("data_nastere", map.get("data_nastere"));
+        resultData.put("adresa", map.get("adresa"));
+
         return resultData;
     }
 }

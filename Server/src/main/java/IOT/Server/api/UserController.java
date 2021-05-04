@@ -1,14 +1,19 @@
 package IOT.Server.api;
 
+import IOT.Server.dao.Conturi;
 import IOT.Server.dao.InvalidNrOfArgsException;
 import IOT.Server.model.Data;
 import IOT.Server.model.User;
 import IOT.Server.service.UserService;
 import IOT.Server.utility.CrateJSON;
+import IOT.Server.utility.CustomException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -26,7 +31,21 @@ public class UserController {
 
     @GetMapping(path = "getPacient/{usr}")
     public String getPacient(@PathVariable("usr") String username) {
-        Map<String, Object> objectMap = userService.getPacient(username);
+        Map<String, Object> objectMap = null;
+        try {
+            if(new Conturi().checkIfUserExists(username) == false)
+                throw new CustomException("User doesn't exist!");
+            String cnp = new Conturi().getCNP(username);
+            objectMap = userService.getPacient(cnp);
+        } catch (Exception e){
+            objectMap = new HashMap<>();
+            objectMap.put("null","There is no such data!");
+        }
+        return CrateJSON.fromMap(objectMap);
+    }
+    @GetMapping(path = "getPacientByCNP/{cnp}")
+    public String getPacientByCNP(@PathVariable("cnp") String cnp){
+        Map<String, Object> objectMap = userService.getPacient(cnp);
         return CrateJSON.fromMap(objectMap);
     }
     @GetMapping(path = "login/{usr}/{pass}")
@@ -37,20 +56,42 @@ public class UserController {
     }
     @GetMapping(path = "pacient/istoric/{usr}")
     public String getIstoric(@PathVariable("usr") String user){
-        List<Map<String, Object>> objectList = userService.getIstoric(user);
-        return CrateJSON.fromListOfMaps(objectList);
+        List<Map<String, Object>> objectList = null;
+        try{
+            if(new Conturi().checkIfUserExists(user) == false)
+                throw new CustomException("User doesn't exist!");
+            String cnp = new Conturi().getCNP(user);
+            objectList = userService.getIstoric(cnp);
+        }catch (Exception e){
+            objectList = new LinkedList<>();
+            Map<String,Object> errorMap = new HashMap<>();
+            errorMap.put("null","There is no such data!");
+        }
+        return CrateJSON.fromListOfMapsWithKey(objectList);
+    }
+    @GetMapping(path = "pacient/istoricByCNP/{cnp}")
+    public String getIstoricByCNP(@PathVariable("cnp")String cnp){
+        List<Map<String, Object>> objectList = userService.getIstoric(cnp);
+        return CrateJSON.fromListOfMapsWithKey(objectList);
     }
     @GetMapping(path = "pacient/diagnostic/{usr}")
     public String getDiagnostic(@PathVariable("usr") String username){
-        Map<String, Object> objectMap = userService.getDiagnostic(username);
-        System.out.println(objectMap);
+        Map<String, Object> objectMap = null;
+        try {
+            if(new Conturi().checkIfUserExists(username) == false)
+                throw new CustomException("User doesn't exist!");
+            String cnp = new Conturi().getCNP(username);
+            objectMap = userService.getDiagnostic(cnp);
+        } catch (Exception e){
+            objectMap = new HashMap<>();
+            objectMap.put("null","There is no such data!");
+        }
         return CrateJSON.fromMap(objectMap);
     }
-//,@JsonProperty("puls") String puls
-
-    @PostMapping(path = "pacient/importData")
-    public void importData(@RequestBody Data data
-    ) throws InvalidNrOfArgsException, InterruptedException, ExecutionException {
-        userService.importData(data.getUsername(),data.getTime(), data.getPuls(), data.getCalorii(), data.getNr_pasi(), data.getNivel_oxigen(), data.getCalitate_somn());
+    @GetMapping(path = "pacient/diagnosticByCNP/{cnp}")
+    public String getDiagnosticByCNP(@PathVariable("cnp")String cnp){
+        Map<String, Object> objectMap = userService.getDiagnostic(cnp);
+        return CrateJSON.fromMap(objectMap);
     }
+
 }

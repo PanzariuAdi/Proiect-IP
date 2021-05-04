@@ -19,10 +19,12 @@ public class CrateJSON {
             stringBuffer.append("\"");
             stringBuffer.append(",");
         }
+        String str = stringBuffer.substring(0,stringBuffer.length()-1);
+        stringBuffer = new StringBuffer(str);
         stringBuffer.append("}");
         return stringBuffer.toString();
     }
-    static public String fromListOfMaps(List<Map<String, Object>> mapList){
+    static public String fromListOfMapsWithKey(List<Map<String, Object>> mapList){
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("{");
         stringBuffer.append("\"size\":\""+mapList.size()+"\",");
@@ -41,7 +43,10 @@ public class CrateJSON {
             }
             currentSize++;
         }
+        String str = stringBuffer.substring(0,stringBuffer.length()-1);
+        stringBuffer = new StringBuffer(str);
         stringBuffer.append("}");
         return stringBuffer.toString();
     }
+
 }
