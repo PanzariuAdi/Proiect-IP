@@ -153,7 +153,24 @@ public class UserService {
     }
 
 
-
-
-
+    public Map<String, Object> getRol(String username) {
+        Map<String ,Object> result = null;
+        try {
+            String rol = new Conturi().getRol(username);
+            result = new HashMap<>();
+            result.put("rol",rol);
+        } catch (Exception e) {
+            Map<String, Object> errorMap = new HashMap<>();
+            errorMap.put("Error!!","Error on the server side!!");
+            errorMap.put("error",e.getMessage());
+            return errorMap;
+        }
+        finally {
+            if(result == null || result.isEmpty()){
+                result = new HashMap<>();
+                result.put("null","There is no such data!");
+            }
+            return result;
+        }
+    }
 }

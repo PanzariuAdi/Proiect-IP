@@ -94,4 +94,10 @@ public class UserController {
         return CrateJSON.fromMap(objectMap);
     }
 
+    @GetMapping(path = "getRol/{username}")
+    public String getRol(@PathVariable("username")String username){
+        Map<String, Object> objectMap = userService.getRol(username);
+        return CrateJSON.fromMap(objectMap);
+    }
+
 }

@@ -85,6 +85,10 @@ public class ClientCommunicationHandler {
         String tempurl = host + "/api/data/get/calitateSomn/"+cnp;
         return getRequest(tempurl);
     }
+    public static JSONObject getRol(String username){
+        String tempurl = host + "/api/user/getRol/"+username;
+        return getRequest(tempurl);
+    }
     //POST REQUESTS
     public static void sendData(String username,String puls,String calorii,String nr_pasi){
         String tempurl = host+ "/api/data/import/bigData";
