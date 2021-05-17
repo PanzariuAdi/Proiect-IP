@@ -48,5 +48,4 @@ public class CrateJSON {
         stringBuffer.append("}");
         return stringBuffer.toString();
     }
-
 }

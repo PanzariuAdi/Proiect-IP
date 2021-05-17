@@ -137,7 +137,9 @@ public class Pacient implements DAO {
                 for (DocumentReference docRef : collection) {
                     ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
                     DocumentSnapshot documentData = getDataApi.get();
-                    result.add(sortMap("date", documentData.getData()));
+                    var temp = documentData.getData();
+                    temp.put("date",documentData.getId());
+                    result.add(sortMap("date", temp));
                 }
                 return result;
             }
@@ -175,7 +177,9 @@ public class Pacient implements DAO {
                 for (DocumentReference docRef : collection) {
                     ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
                     DocumentSnapshot documentData = getDataApi.get();
-                    result.add(sortMap("calitate_somn", documentData.getData()));
+                    var temp = documentData.getData();
+                    temp.put("date",documentData.getId());
+                    result.add(sortMap("calitate_somn", temp));
                 }
                 return result;
             }
@@ -184,7 +188,9 @@ public class Pacient implements DAO {
                 for (DocumentReference docRef : collection) {
                     ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
                     DocumentSnapshot documentData = getDataApi.get();
-                    result.add(sortMap("nivel_oxigen", documentData.getData()));
+                    var temp = documentData.getData();
+                    temp.put("date",documentData.getId());
+                    result.add(sortMap("nivel_oxigen", temp));
                 }
                 return result;
             }
@@ -273,8 +279,7 @@ public class Pacient implements DAO {
                 resultData.put("puls", map.get("puls"));
                 resultData.put("calorii", map.get("calorii"));
                 resultData.put("nr_pasi", map.get("nr_pasi"));
-                resultData.put("nivel_oxigen", map.get("nivel_oxigen"));
-                resultData.put("calitate_somn", map.get("calitate_somn"));
+                resultData.put("date", map.get("date"));
             }
             break;
             case "contraindicatii":
@@ -293,8 +298,15 @@ public class Pacient implements DAO {
                 resultData.put((String) map.get("nume_medicament"), map.get("mod_de_administrare"));
             }
             break;
-            case "calitate_somn" : resultData.put("calitate", map.get("calitate")); break;
-            case "nivel_oxigen" : resultData.put("value", map.get("value")); break;
+            case "calitate_somn" : {
+
+                resultData.put("calitate", map.get("calitate"));
+                resultData.put("date",map.get("date"));
+            } break;
+            case "nivel_oxigen" :{
+                resultData.put("value", map.get("value"));
+                resultData.put("date",map.get("date"));
+            } break;
         }
 
         return resultData;
