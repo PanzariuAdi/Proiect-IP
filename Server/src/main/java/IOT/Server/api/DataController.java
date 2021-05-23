@@ -1,11 +1,13 @@
 package IOT.Server.api;
 
+import IOT.Server.dao.Conturi;
 import IOT.Server.dao.InvalidNrOfArgsException;
 import IOT.Server.model.CalitateSomn;
 import IOT.Server.model.Data;
 import IOT.Server.model.Oxigen;
 import IOT.Server.service.DataService;
 import IOT.Server.utility.CrateJSON;
+import IOT.Server.utility.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +28,7 @@ public class DataController {
     public void importData(@RequestBody Data data
     ) throws InvalidNrOfArgsException, InterruptedException, ExecutionException {
         dataService.importData(data.getUsername(),data.getPuls(), data.getCalorii(), data.getNr_pasi());
+
     }
 
     @PostMapping(path = "import/oxigen")

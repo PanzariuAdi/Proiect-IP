@@ -8,8 +8,8 @@ import java.net.URL;
 
 public class ClientCommunicationHandler {
 
-    //static private String host = "http://localhost:8010";
-    static private String host ="https://radiant-bayou-97811.herokuapp.com";
+    static private String host = "http://localhost:8010";
+    //static private String host ="https://radiant-bayou-97811.herokuapp.com";
 
     //GET REQUESTS
     public static Integer login(String username, String password){
@@ -118,6 +118,14 @@ public class ClientCommunicationHandler {
         postRequest(tempurl,jsonObject);
     }
 
+    public static void sendToken(String username,String token){
+        String tempurl = host+ "/api/user/token/insert";
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.append("username",username);
+        jsonObject.append("token",token);
+
+        postRequest(tempurl,jsonObject);
+    }
     public static JSONObject getRequest(String URL){
         JSONObject response = null;
         HttpURLConnection connection = null;

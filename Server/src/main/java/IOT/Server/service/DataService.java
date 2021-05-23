@@ -1,21 +1,48 @@
 package IOT.Server.service;
 
-import IOT.Server.dao.Conturi;
-import IOT.Server.dao.InvalidNrOfArgsException;
-import IOT.Server.dao.Pacient;
-import IOT.Server.dao.Persoana;
+import IOT.Server.dao.*;
+import IOT.Server.utility.Person;
+import IOT.Server.utility.SendNotification;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Component
 public class DataService {
     public void importData(String username ,String puls,String calorii, String nr_pasi) throws InvalidNrOfArgsException, InterruptedException, ExecutionException {
-        new Pacient().insertCollectionByName(new Conturi().getCNP(username),"date",puls,calorii,nr_pasi);
+        String cnp = new Conturi().getCNP(username);
+        String response = null;
+        Person temp = new Person(cnp);
+
+        List<Map<String,Object>> mapList = new Pacient().getCollectionByName(cnp,"date");
+        ArrayList<Float> arrayList = new ArrayList<>();
+        for(Map<String,Object> map : mapList){
+            arrayList.add(Float.parseFloat((String) map.get("puls")));
+        }
+        temp.setHeartMeasures(arrayList);
+        temp.setVarsta((String)new Persoana().getDocumentByID(cnp).get("data_nastere"));
+        String msg = temp.addHeartMeasure(Float.parseFloat(puls));
+        new Pacient().insertCollectionByName(cnp,"date",puls,calorii,nr_pasi);
+        var person = new Persoana().getDocumentByID(cnp);
+        var doctori =  new Doctor().getCollection();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(person.get("nume"));
+        stringBuilder.append(" ");
+        stringBuilder.append(person.get("prenume"));
+        stringBuilder.append(" : ");
+        stringBuilder.append(msg);
+        for(var doctor : doctori) {
+            String dcnp = (String) doctor.get("cnp");
+            String dusr = new Conturi().getUsernameByCNP(dcnp);
+            System.out.println(dusr);
+            if(dusr!=null)
+                SendNotification.send(stringBuilder.toString(), dusr);
+        }
+        SendNotification.send(stringBuilder.toString(), username);
     }
 
     public void importOxigen(String username, String oxigen) throws ExecutionException, InterruptedException {

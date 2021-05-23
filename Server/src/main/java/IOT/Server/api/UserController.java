@@ -3,10 +3,12 @@ package IOT.Server.api;
 import IOT.Server.dao.Conturi;
 import IOT.Server.dao.InvalidNrOfArgsException;
 import IOT.Server.model.Data;
+import IOT.Server.model.Token;
 import IOT.Server.model.User;
 import IOT.Server.service.UserService;
 import IOT.Server.utility.CrateJSON;
 import IOT.Server.utility.CustomException;
+import IOT.Server.utility.SendNotification;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -98,6 +100,16 @@ public class UserController {
     public String getRol(@PathVariable("username")String username){
         Map<String, Object> objectMap = userService.getRol(username);
         return CrateJSON.fromMap(objectMap);
+    }
+
+    @PostMapping(path ="token/insert")
+    public void insertToken(@RequestBody Token token) throws ExecutionException, InterruptedException, InvalidNrOfArgsException {
+        System.out.println("token received!" + token.getToken());
+        userService.insertToken(token);
+    }
+    @PostMapping(path = "test")
+    public void test() throws ExecutionException, InterruptedException {
+        SendNotification.send("test","user");
     }
 
 }

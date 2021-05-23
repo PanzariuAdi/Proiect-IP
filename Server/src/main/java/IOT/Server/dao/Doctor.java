@@ -70,7 +70,9 @@ public class Doctor implements DAO {
         for (DocumentReference docRef : collection) {
             ApiFuture<DocumentSnapshot> getDataApi = docRef.get();
             DocumentSnapshot documentData = getDataApi.get();
-            result.add(getSortedMap(documentData.getData()));
+            var temp = documentData.getData();
+            temp.put("cnp",documentData.getId());
+            result.add(getSortedMap(temp));
         }
 
         return result;
@@ -81,6 +83,7 @@ public class Doctor implements DAO {
         resultData.put("specializare", map.get("specializare"));
         resultData.put("spital", map.get("spital"));
         resultData.put("birou", map.get("birou"));
+        resultData.put("cnp", map.get("cnp"));
 
         return resultData;
     }

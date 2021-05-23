@@ -1,6 +1,7 @@
 package IOT.Server.service;
 
 import IOT.Server.dao.*;
+import IOT.Server.model.Token;
 import IOT.Server.model.User;
 import IOT.Server.utility.JoinMaps;
 import org.springframework.stereotype.Component;
@@ -172,5 +173,9 @@ public class UserService {
             }
             return result;
         }
+    }
+
+    public void insertToken(Token token) throws ExecutionException, InterruptedException, InvalidNrOfArgsException {
+        new Conturi().insertToken(token.getUsername(), token.getToken());
     }
 }

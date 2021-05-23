@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-     System.out.println(ClientCommunicationHandler.getRol("maxim.marius76"));
+     ClientCommunicationHandler.sendData("user","89","4213","3222");
 
 
 
